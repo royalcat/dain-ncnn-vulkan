@@ -25,24 +25,24 @@ typedef std::string path_t;
 #endif
 
 #if _WIN32
-static bool path_is_directory(const path_t& path)
+static bool path_is_directory(const path_t &path)
 {
     DWORD attr = GetFileAttributesW(path.c_str());
     return (attr != INVALID_FILE_ATTRIBUTES) && (attr & FILE_ATTRIBUTE_DIRECTORY);
 }
 
-static int list_directory(const path_t& dirpath, std::vector<path_t>& imagepaths)
+static int list_directory(const path_t &dirpath, std::vector<path_t> &imagepaths)
 {
     imagepaths.clear();
 
-    _WDIR* dir = _wopendir(dirpath.c_str());
+    _WDIR *dir = _wopendir(dirpath.c_str());
     if (!dir)
     {
         fwprintf(stderr, L"opendir failed %ls\n", dirpath.c_str());
         return -1;
     }
 
-    struct _wdirent* ent = 0;
+    struct _wdirent *ent = 0;
     while ((ent = _wreaddir(dir)))
     {
         if (ent->d_type != DT_REG)
@@ -56,8 +56,8 @@ static int list_directory(const path_t& dirpath, std::vector<path_t>& imagepaths
 
     return 0;
 }
-#else // _WIN32
-static bool path_is_directory(const path_t& path)
+#else  // _WIN32
+static bool path_is_directory(const path_t &path)
 {
     struct stat s;
     if (stat(path.c_str(), &s) != 0)
@@ -65,18 +65,18 @@ static bool path_is_directory(const path_t& path)
     return S_ISDIR(s.st_mode);
 }
 
-static int list_directory(const path_t& dirpath, std::vector<path_t>& imagepaths)
+static int list_directory(const path_t &dirpath, std::vector<path_t> &imagepaths)
 {
     imagepaths.clear();
 
-    DIR* dir = opendir(dirpath.c_str());
+    DIR *dir = opendir(dirpath.c_str());
     if (!dir)
     {
         fprintf(stderr, "opendir failed %s\n", dirpath.c_str());
         return -1;
     }
 
-    struct dirent* ent = 0;
+    struct dirent *ent = 0;
     while ((ent = readdir(dir)))
     {
         if (ent->d_type != DT_REG)
@@ -92,7 +92,7 @@ static int list_directory(const path_t& dirpath, std::vector<path_t>& imagepaths
 }
 #endif // _WIN32
 
-static path_t get_file_name_without_extension(const path_t& path)
+static path_t get_file_name_without_extension(const path_t &path)
 {
     size_t dot = path.rfind(PATHSTR('.'));
     if (dot == path_t::npos)
@@ -101,7 +101,7 @@ static path_t get_file_name_without_extension(const path_t& path)
     return path.substr(0, dot);
 }
 
-static path_t get_file_extension(const path_t& path)
+static path_t get_file_extension(const path_t &path)
 {
     size_t dot = path.rfind(PATHSTR('.'));
     if (dot == path_t::npos)
@@ -116,30 +116,30 @@ static path_t get_executable_directory()
     wchar_t filepath[256];
     GetModuleFileNameW(NULL, filepath, 256);
 
-    wchar_t* backslash = wcsrchr(filepath, L'\\');
+    wchar_t *backslash = wcsrchr(filepath, L'\\');
     backslash[1] = L'\0';
 
     return path_t(filepath);
 }
-#else // _WIN32
+#else  // _WIN32
 static path_t get_executable_directory()
 {
     char filepath[256];
     readlink("/proc/self/exe", filepath, 256);
 
-    char* slash = strrchr(filepath, '/');
+    char *slash = strrchr(filepath, '/');
     slash[1] = '\0';
 
     return path_t(filepath);
 }
 #endif // _WIN32
 
-static bool filepath_is_readable(const path_t& path)
+static bool filepath_is_readable(const path_t &path)
 {
 #if _WIN32
-    FILE* fp = _wfopen(path.c_str(), L"rb");
-#else // _WIN32
-    FILE* fp = fopen(path.c_str(), "rb");
+    FILE *fp = _wfopen(path.c_str(), L"rb");
+#else  // _WIN32
+    FILE *fp = fopen(path.c_str(), "rb");
 #endif // _WIN32
     if (!fp)
         return false;
@@ -148,7 +148,7 @@ static bool filepath_is_readable(const path_t& path)
     return true;
 }
 
-static path_t sanitize_filepath(const path_t& path)
+static path_t sanitize_filepath(const path_t &path)
 {
     if (filepath_is_readable(path))
         return path;
@@ -156,7 +156,7 @@ static path_t sanitize_filepath(const path_t& path)
     return get_executable_directory() + path;
 }
 
-static path_t sanitize_dirpath(const path_t& path)
+static path_t sanitize_dirpath(const path_t &path)
 {
     if (path_is_directory(path))
         return path;
